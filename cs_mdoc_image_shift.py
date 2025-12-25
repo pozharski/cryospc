@@ -8,9 +8,22 @@ Adds image shifts to CryoSPARC micrograph metadata.  For this to work,
 you have to have permissions to modify cryoSPARC metadata files in 
 place.  You can provide explicit path to the cryoSPARC metadata file
 (look under Outputs tab) or provide the project ID (e.g. P304) and
-job ID (e.g. J297) and script will loacte the path - however,
+job ID (e.g. J297) and script will locate the path - however,
 this likely requires that you run the script as cryosparc master
-user that has access to cryosparc_compute module.
+user that has access to cryosparc_compute module (which can be
+activate by executing "eval $(cryosparcm env)").
+
+The targeted cryoSPARC job is expected to be the one that ran when
+the "Export exposures" action was performed from a live session.
+By default the script will modify the accepted exposures metadata
+file.  You can try other metadata files as well, but it will only
+work on files that list original micrograph file names - i.e. the 
+movie_blob/path field must be present.
+
+Standard use of this script is to pull the image shift data from
+SerialEM data collection session to use it subsequently to cluster
+micrographs for the CTF refinement (see Exposure group utilities 
+job in cryoSPARC for details).
 
 ---
 Help? Gondor needs no help! // Boromir, son of Denethor (apocryphal)
