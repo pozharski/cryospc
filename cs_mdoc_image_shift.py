@@ -58,7 +58,14 @@ def update_metadata(data, args):
     cli = get_cli(args)
     if cli is None:
       return
-    cspath = cli.get_result_download_abs_path(args.pid, args.jobid+'.accepted_exposures.mscope_params')
+    jobdata = cli.get_job(args.pid, args.jobid)
+    if jobdata['job_type'] == 'curate_exposures_v2':
+      cspath = cli.get_result_download_abs_path(args.pid, args.jobid+'.exposures_accepted.mscope_params')
+    elif jobdata['job_type'] == 'export_live_exposures':
+      cspath = cli.get_result_download_abs_path(args.pid, args.jobid+'.accepted_exposures.mscope_params')
+    else:
+      print("Unlisted job type ", jobdata['job_type'])
+      return
   if os.path.exists(cspath):
     print('Metadata file found at '+cspath)
   else:
@@ -84,6 +91,7 @@ def update_metadata(data, args):
 
 def parse_mdocs(args):
   data, shiftx, shifty = {}, [], []
+
   ptrn = re.compile("ImageShift = (-*\d*\.\d*)\s*(-*\d*\.\d*)")
   fnames = [t for t in os.listdir(args.mdoc_folder) if os.path.splitext(t)[-1]=='.mdoc']
   Nmdoc = len(fnames)
