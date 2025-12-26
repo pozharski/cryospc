@@ -13,17 +13,26 @@ this likely requires that you run the script as cryosparc master
 user that has access to cryosparc_compute module (which can be
 activate by executing "eval $(cryosparcm env)").
 
-The targeted cryoSPARC job is expected to be the one that ran when
-the "Export exposures" action was performed from a live session.
-By default the script will modify the accepted exposures metadata
-file.  You can try other metadata files as well, but it will only
+Currently, only "Live exposure export" and 
+                "Manually curate exposures" (v2)
+job types are recognized and will be properly processed.  Ask
+the man to add some other job type (still, it should be the one
+that carries the mscope_params metadata and original 
+movie_blob/path field).
+
+You can try other metadata files as well, but it will only
 work on files that list original micrograph file names - i.e. the 
-movie_blob/path field must be present.
+movie_blob/path field must be present.  Try it at your own risk.
 
 Standard use of this script is to pull the image shift data from
 SerialEM data collection session to use it subsequently to cluster
 micrographs for the CTF refinement (see Exposure group utilities 
-job in cryoSPARC for details).
+job in cryoSPARC for details).  The man recommends to use k-means
+clustering algorithm.  Do not forget to check the box to split the 
+particles into sets.  Also, most of the time you won't know how many
+inage shift groups will be needed, so run the job with the default 
+number, inspect the image shift chart and re-run it with the updated
+value.
 
 ---
 Help? Gondor needs no help! // Boromir, son of Denethor (apocryphal)
