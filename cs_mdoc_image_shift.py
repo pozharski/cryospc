@@ -85,6 +85,9 @@ def update_metadata(data, args):
   print('Metadata lists ',sum(exposure_data['mscope_params/beam_shift_known']),' known image shift values' )
   for row in exposure_data:
     fname = os.path.basename(row['movie_blob/path']).decode()
+    first_bit = fname.split('_')[0]
+    if str(row['uid']).rjust(len(first_bit),'0') == first_bit:
+      fname = '_'.join(fname.split('_')[1:])
     datum = data.get(fname, False)
     if datum:
       row['mscope_params/beam_shift'] = datum
@@ -101,7 +104,7 @@ def update_metadata(data, args):
 def parse_mdocs(args):
   data, shiftx, shifty = {}, [], []
 
-  ptrn = re.compile("ImageShift = (-*\d*\.\d*)\s*(-*\d*\.\d*)")
+  ptrn = re.compile(r"ImageShift = (-*\d*\.\d*)\s*(-*\d*\.\d*)")
   fnames = [t for t in os.listdir(args.mdoc_folder) if os.path.splitext(t)[-1]=='.mdoc']
   Nmdoc = len(fnames)
   print("Found ",Nmdoc," mdoc files, processing...")
@@ -127,20 +130,53 @@ def parse_mdocs(args):
       plt.ylabel('Shift Y')
       plt.xlabel('Shift X')
       plt.show()
-  return data, shiftx, shifty
+  return data
+
+def handle_the_rest(args, data, shiftx, shifty):
+  if args.output_npy:
+    max_filename_length = max([len(t) for t in data.keys()])
+    outarray = np.fromiter(data.items(), 
+                           dtype=[('movie_blob/filename', 'S'+str(max_filename_length)), ('mscope_params/beam_shift', '<f4', (2,))],
+                           count = len(data))
+    with open(args.output_npy,'wb') as fout:
+      np.save(fout, outarray)
+  if args.show_plot:
+    try:
+      from matplotlib import pyplot as plt
+      plt.plot(shiftx,shifty,'r.')
+      plt.ylabel('Shift Y')
+      plt.xlabel('Shift X')
+      plt.show()
+    except ModuleNotFoundError:
+      print("Matplotlib not found in the environment")
+  return data  
+
+def parse_npy(args):
+  data, shiftx, shifty = {}, [], []
+  input_data = np.load(args.input_npy)
+  for row in input_data:
+    data[row[0].decode()] = row[1].tolist()
+    shiftx.append(row[1][0])
+    shifty.append(row[1][1])
+  handle_the_rest(args, data, shiftx, shifty)
+  return data
 
 def main():
   parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter, description=headerhelp)
-  parser.add_argument('-m', '--mdoc-folder', required=True, help='MDOC folder')
+  parser.add_argument('-m', '--mdoc-folder', help='MDOC folder')
   parser.add_argument('-p', '--pid', help='Project ID')
   parser.add_argument('-j', '--jobid', help='Exposure export job ID')
   parser.add_argument('-i', '--cspath', help='Path to cryoSPARC numpy metadata file')
   parser.add_argument('-o', '--output-npy', help='Output numpy data file')
+  parser.add_argument('-n', '--input-npy', help='Intput numpy data file')
   parser.add_argument('--show-plot', action='store_true', help='Plot the 2D shift distribution')
   parser.add_argument('--dry-run', action='store_true', help='Dry run, cryoSPARC metadata file will not be updated.')
   args = parser.parse_args()
-  
-  data, shiftx, shifty = parse_mdocs(args)
+
+  if args.mdoc_folder is not None:
+    data = parse_mdocs(args)
+  elif args.input_npy is not None:
+    data = parse_npy(args)
 
   update_metadata(data, args)
   
