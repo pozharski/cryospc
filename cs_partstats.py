@@ -20,7 +20,7 @@ def process_metadata(args):
   if args.cspath:
     cspath = args.cspath
   else:
-    cli = get_cli(args)
+    cli = get_cli()
     if cli is None:
       return
     jobdata = cli.get_job(args.pid, args.jobid)
