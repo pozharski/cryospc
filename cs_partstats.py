@@ -14,6 +14,7 @@ Help? Gondor needs no help! // Boromir, son of Denethor (apocryphal)
 
 import os
 import numpy as np
+from cs_cli import get_cli
 
 def process_metadata(args):
   if args.cspath:
