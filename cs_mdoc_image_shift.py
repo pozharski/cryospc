@@ -41,30 +41,38 @@ Help? Gondor needs no help! // Boromir, son of Denethor (apocryphal)
 import re, os
 import numpy as np
 
-def get_cli(args):
-  if args.pid is None:
-    print('Project ID unknown, skipping metadata update...')
-    return None
-  if args.jobid is None:
-    print('Job ID unknown, skipping metadata update...')
-    return None
-  try:
-    from cryosparc_compute import client
-  except:
-    print('Failed to import cryosparc_compute module, skipping metadata update...')
-    return None 
-  cshost = os.environ.get('CRYOSPARC_MASTER_HOSTNAME')
-  csport = os.environ.get('CRYOSPARC_COMMAND_CORE_PORT')
-  if cshost and csport:
-    return client.CommandClient(host=os.environ['CRYOSPARC_MASTER_HOSTNAME'], port=int(os.environ['CRYOSPARC_COMMAND_CORE_PORT']))
-  print("Access to CryoSPARC not configured, skipping metadata update...")
-  return None
+from cs_cli import get_cli
+
+# def get_cli(args):
+#   if args.pid is None:
+#     print('Project ID unknown, skipping metadata update...')
+#     return None
+#   if args.jobid is None:
+#     print('Job ID unknown, skipping metadata update...')
+#     return None
+#   try:
+#     from cryosparc_compute import client
+#   except:
+#     print('Failed to import cryosparc_compute module, skipping metadata update...')
+#     return None 
+#   cshost = os.environ.get('CRYOSPARC_MASTER_HOSTNAME')
+#   csport = os.environ.get('CRYOSPARC_COMMAND_CORE_PORT')
+#   if cshost and csport:
+#     return client.CommandClient(host=os.environ['CRYOSPARC_MASTER_HOSTNAME'], port=int(os.environ['CRYOSPARC_COMMAND_CORE_PORT']))
+#   print("Access to CryoSPARC not configured, skipping metadata update...")
+#   return None
 
 def update_metadata(data, args):
   if args.cspath:
     cspath = args.cspath
   else:
-    cli = get_cli(args)
+    if args.pid is None:
+      print('Project ID unknown, skipping metadata update...')
+      return None
+    if args.jobid is None:
+      print('Job ID unknown, skipping metadata update...')
+      return None
+      cli = get_cli(args)
     if cli is None:
       return
     jobdata = cli.get_job(args.pid, args.jobid)
